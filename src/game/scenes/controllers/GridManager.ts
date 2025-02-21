@@ -1,9 +1,10 @@
 import Phaser from 'phaser'
+import { Colors } from '../constants/Color'
 
 export class GridManager {
   private scene: Phaser.Scene
-  private gridSize = { cols: 10, rows: 20, cellSize: 30 }
   private grid: number[][]
+  public readonly gridSize = { cols: 10, rows: 20, cellSize: 30 }
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
@@ -32,7 +33,7 @@ export class GridManager {
 
     for (let i = 0; i < this.gridSize.cols; i++) {
       for (let j = 0; j < this.gridSize.rows; j++) {
-        const color = this.grid[j][i] === 0 ? 0x444444 : this.grid[j][i]
+        const color = this.grid[j][i] === 0 ? Colors.BACKGROUND : this.grid[j][i]
 
         this.scene.add
           .rectangle(
@@ -43,7 +44,7 @@ export class GridManager {
             color
           )
           .setOrigin(0, 0)
-          .setStrokeStyle(1, 0xffffff)
+          .setStrokeStyle(1, Colors.BORDER)
       }
     }
   }
@@ -82,9 +83,5 @@ export class GridManager {
 
     this.drawGrid()
     return linesCleared
-  }
-
-  getSize() {
-    return this.gridSize
   }
 }

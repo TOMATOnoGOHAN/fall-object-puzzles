@@ -1,30 +1,34 @@
-import { getRandomBlock } from './Block'
-import { rotateMatrix } from './BlockUtils'
-import { GridManager } from './GridManager'
+import { rotateMatrix, getBlock } from '../utils/BlockUtils'
+import { Colors } from '../constants/Color'
+import { GridManager } from '../controllers/GridManager'
 import Phaser from 'phaser'
+import { ScoreManager } from './ScoreManager'
+import { BlockType } from '../components/Block'
 
 export class BlockController {
   private scene: Phaser.Scene
   private gridManager: GridManager
+  private scoreManager: ScoreManager
   private currentBlock!: { shape: number[][]; color: number }
   private currentX!: number
   private currentY!: number
 
-  private dropInterval: number = 500
-  private level: number = 1
-  private score: number = 0
+  private choiceBlock: number = 0
+  private BLOCK_LIST: BlockType[] = ['I', 'T', 'J', 'L', 'O', 'T', 'S', 'Z']
 
-  constructor(scene: Phaser.Scene, gridManager: GridManager) {
+  constructor(scene: Phaser.Scene, gridManager: GridManager, scoreManager: ScoreManager) {
     this.scene = scene
     this.gridManager = gridManager
+    this.scoreManager = scoreManager
   }
 
   spawnBlock(): void {
-    this.currentBlock = getRandomBlock()
+    this.currentBlock = getBlock(this.BLOCK_LIST[this.choiceBlock])
+    this.choiceBlock = (this.choiceBlock + 1) % this.BLOCK_LIST.length
     this.currentX = 4
     this.currentY = 0
     if (this.gridManager.checkCollision(this.currentX, this.currentY, this.currentBlock)) {
-      this.scene.add.text(64, 240, 'Game Over', { fontSize: '32px', color: '#ff0000' })
+      this.scene.add.text(64, 240, 'Game Over', { fontSize: '32px', color: Colors.TEXT.GAME_OVER })
       this.scene.scene.pause()
       return
     }
@@ -37,32 +41,16 @@ export class BlockController {
     }
 
     this.gridManager.fixBlock(this.currentX, this.currentY, this.currentBlock)
-    this.clearAndCheckLines()
-    this.spawnBlock()
-  }
-
-  private clearAndCheckLines(): void {
     const linesCleared = this.gridManager.clearLines()
-    if (linesCleared > 0) {
-      this.score += linesCleared * 100
-      if (this.score >= this.level * 500) {
-        this.level++
-        this.dropInterval = Math.max(100, this.dropInterval - 50)
-      }
-    }
+    this.scoreManager.updateScore(linesCleared)
+    this.spawnBlock()
   }
 
   moveDown(): void {
     if (this.gridManager.checkCollision(this.currentX, this.currentY + 1, this.currentBlock)) {
       this.gridManager.fixBlock(this.currentX, this.currentY, this.currentBlock)
       const linesCleared = this.gridManager.clearLines()
-      if (linesCleared > 0) {
-        this.score += linesCleared * 100
-        if (this.score >= this.level * 500) {
-          this.level++
-          this.dropInterval = Math.max(100, this.dropInterval - 50)
-        }
-      }
+      this.scoreManager.updateScore(linesCleared)
       this.spawnBlock()
       return
     }
@@ -102,16 +90,7 @@ export class BlockController {
     this.currentBlock.shape.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell === 1) {
-          this.scene.add
-            .rectangle(
-              (this.currentX + colIndex) * this.gridManager.getSize().cellSize,
-              (this.currentY + rowIndex) * this.gridManager.getSize().cellSize,
-              this.gridManager.getSize().cellSize,
-              this.gridManager.getSize().cellSize,
-              this.currentBlock.color
-            )
-            .setOrigin(0, 0)
-            .setStrokeStyle(1, 0xffffff)
+          this.drawRectangle(this.currentX + colIndex, this.currentY + rowIndex, this.currentBlock.color)
         }
       })
     })
@@ -121,25 +100,22 @@ export class BlockController {
     this.currentBlock.shape.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell === 1) {
-          this.scene.add
-            .rectangle(
-              (this.currentX + colIndex) * this.gridManager.getSize().cellSize,
-              (this.currentY + rowIndex) * this.gridManager.getSize().cellSize,
-              this.gridManager.getSize().cellSize,
-              this.gridManager.getSize().cellSize,
-              0x444444
-            )
-            .setOrigin(0, 0)
-            .setStrokeStyle(1, 0xffffff)
+          this.drawRectangle(this.currentX + colIndex, this.currentY + rowIndex, Colors.BACKGROUND)
         }
       })
     })
   }
-  getScore(): number {
-    return this.score
-  }
 
-  getLevel(): number {
-    return this.level
+  private drawRectangle(x: number, y: number, color: number): void {
+    this.scene.add
+      .rectangle(
+        x * this.gridManager.gridSize.cellSize,
+        y * this.gridManager.gridSize.cellSize,
+        this.gridManager.gridSize.cellSize,
+        this.gridManager.gridSize.cellSize,
+        color
+      )
+      .setOrigin(0, 0)
+      .setStrokeStyle(1, Colors.BORDER)
   }
 }

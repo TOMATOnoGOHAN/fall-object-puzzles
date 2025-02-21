@@ -11,7 +11,6 @@ interface IProps {
   currentActiveScene?: (scene_instance: Phaser.Scene) => void
 }
 
-// ReactとPhaserの連携を行うコンポーネント
 export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame({ currentActiveScene }, ref) {
   const game = useRef<Phaser.Game | null>(null!)
 

@@ -1,7 +1,6 @@
 import Phaser from 'phaser'
 import MainScene from './scenes/MainScene'
 
-// Phaserの設定管理とエントリーポイント
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   width: 300,
