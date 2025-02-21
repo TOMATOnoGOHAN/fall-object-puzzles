@@ -8,15 +8,25 @@ export default class MainScene extends Phaser.Scene {
   private blockController!: BlockController
   private scoreManager!: ScoreManager
   private lastDropTime: number = 0
+  private readonly defaultDropInterval: number = 500
 
   constructor() {
     super('MainScene')
   }
-  create(): void {
+
+  public create(): void {
+    this.initializeManagers()
+    this.setupControls()
+    this.blockController.spawnBlock()
+  }
+
+  private initializeManagers(): void {
     this.gridManager = new GridManager(this)
     this.scoreManager = new ScoreManager()
     this.blockController = new BlockController(this, this.gridManager, this.scoreManager)
+  }
 
+  private setupControls(): void {
     const keyMappings: { [key: string]: () => void } = {
       LEFT: () => this.blockController.moveLeft(),
       RIGHT: () => this.blockController.moveRight(),
@@ -28,18 +38,17 @@ export default class MainScene extends Phaser.Scene {
     Object.keys(keyMappings).forEach((key) => {
       this.input.keyboard?.on(`keydown-${key}`, keyMappings[key])
     })
-
-    this.blockController.spawnBlock()
   }
 
-  update(time: number): void {
-    if (!this.lastDropTime) this.lastDropTime = time
-
-    const dropInterval = Math.max(100, 500 - this.scoreManager.getLevel() * 50)
-
-    if (time - this.lastDropTime > dropInterval) {
+  public update(time: number): void {
+    if (this.shouldDropBlock(time)) {
       this.lastDropTime = time
       this.blockController.moveDown()
     }
+  }
+
+  private shouldDropBlock(time: number): boolean {
+    const dropInterval = Math.max(100, this.defaultDropInterval - this.scoreManager.getLevel() * 50)
+    return time - this.lastDropTime > dropInterval
   }
 }

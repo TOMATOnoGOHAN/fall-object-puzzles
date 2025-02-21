@@ -13,4 +13,10 @@ export const Colors = {
     S: 0x3da35d,
     Z: 0xb22222
   }
+} as const
+
+type BlockColorKeys = keyof typeof Colors.BLOCKS
+
+export function getBlockColor(type: BlockColorKeys): number {
+  return Colors.BLOCKS[type]
 }

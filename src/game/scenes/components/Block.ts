@@ -5,9 +5,22 @@ export enum BlockCell {
   FILLED = 1
 }
 
-export type BlockType = 'I' | 'O' | 'T' | 'L' | 'J' | 'S' | 'Z'
+export enum BlockType {
+  I = 'I',
+  O = 'O',
+  T = 'T',
+  L = 'L',
+  J = 'J',
+  S = 'S',
+  Z = 'Z'
+}
 
-export const BLOCK: Record<BlockType, { shape: BlockCell[][]; color: number }> = {
+interface BlockDefinition {
+  shape: BlockCell[][]
+  color: number
+}
+
+export const BLOCK: Record<BlockType, BlockDefinition> = {
   I: { shape: [[1, 1, 1, 1]], color: Colors.BLOCKS.I },
   O: {
     shape: [

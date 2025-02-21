@@ -3,25 +3,38 @@ export class ScoreManager {
   private level: number = 1
   private dropInterval: number = 500
 
-  updateScore(linesCleared: number): void {
+  private readonly levelThreshold: number = 500
+  private readonly minDropInterval: number = 100
+  private readonly dropIntervalReduction: number = 50
+  private readonly scorePerLine: number = 100
+
+  public updateScore(linesCleared: number): void {
     if (linesCleared > 0) {
-      this.score += linesCleared * 100
-      if (this.score >= this.level * 500) {
-        this.level++
-        this.dropInterval = Math.max(100, this.dropInterval - 50)
-      }
+      this.incrementScore(linesCleared)
+      this.checkLevelUp()
     }
   }
 
-  getScore(): number {
+  private incrementScore(linesCleared: number): void {
+    this.score += linesCleared * this.scorePerLine
+  }
+
+  private checkLevelUp(): void {
+    if (this.score >= this.level * this.levelThreshold) {
+      this.level++
+      this.dropInterval = Math.max(this.minDropInterval, this.dropInterval - this.dropIntervalReduction)
+    }
+  }
+
+  public getScore(): number {
     return this.score
   }
 
-  getLevel(): number {
+  public getLevel(): number {
     return this.level
   }
 
-  getDropInterval(): number {
+  public getDropInterval(): number {
     return this.dropInterval
   }
 }

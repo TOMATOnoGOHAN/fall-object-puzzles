@@ -14,7 +14,16 @@ export class BlockController {
   private currentY!: number
 
   private choiceBlock: number = 0
-  private BLOCK_LIST: BlockType[] = ['I', 'T', 'J', 'L', 'O', 'T', 'S', 'Z']
+  private BLOCK_LIST: BlockType[] = [
+    BlockType.I,
+    BlockType.T,
+    BlockType.J,
+    BlockType.L,
+    BlockType.O,
+    BlockType.T,
+    BlockType.S,
+    BlockType.Z
+  ]
 
   constructor(scene: Phaser.Scene, gridManager: GridManager, scoreManager: ScoreManager) {
     this.scene = scene
@@ -22,31 +31,39 @@ export class BlockController {
     this.scoreManager = scoreManager
   }
 
-  spawnBlock(): void {
+  public spawnBlock(): void {
     this.currentBlock = getBlock(this.BLOCK_LIST[this.choiceBlock])
     this.choiceBlock = (this.choiceBlock + 1) % this.BLOCK_LIST.length
     this.currentX = 4
     this.currentY = 0
-    if (this.gridManager.checkCollision(this.currentX, this.currentY, this.currentBlock)) {
-      this.scene.add.text(64, 240, 'Game Over', { fontSize: '32px', color: Colors.TEXT.GAME_OVER })
-      this.scene.scene.pause()
+
+    if (this.isGameOver()) {
       return
     }
+
     this.drawBlock()
   }
 
-  drop(): void {
+  private isGameOver(): boolean {
+    if (this.gridManager.checkCollision(this.currentX, this.currentY, this.currentBlock)) {
+      this.scene.add.text(64, 240, 'Game Over', { fontSize: '32px', color: Colors.TEXT.GAME_OVER })
+      this.scene.scene.pause()
+      return true
+    }
+    return false
+  }
+
+  public drop(): void {
     while (!this.gridManager.checkCollision(this.currentX, this.currentY + 1, this.currentBlock)) {
       this.currentY++
     }
-
     this.gridManager.fixBlock(this.currentX, this.currentY, this.currentBlock)
     const linesCleared = this.gridManager.clearLines()
     this.scoreManager.updateScore(linesCleared)
     this.spawnBlock()
   }
 
-  moveDown(): void {
+  public moveDown(): void {
     if (this.gridManager.checkCollision(this.currentX, this.currentY + 1, this.currentBlock)) {
       this.gridManager.fixBlock(this.currentX, this.currentY, this.currentBlock)
       const linesCleared = this.gridManager.clearLines()
@@ -54,13 +71,12 @@ export class BlockController {
       this.spawnBlock()
       return
     }
-
     this.clearBlock()
     this.currentY++
     this.drawBlock()
   }
 
-  moveLeft(): void {
+  public moveLeft(): void {
     if (!this.gridManager.checkCollision(this.currentX - 1, this.currentY, this.currentBlock)) {
       this.clearBlock()
       this.currentX--
@@ -68,7 +84,7 @@ export class BlockController {
     }
   }
 
-  moveRight(): void {
+  public moveRight(): void {
     if (!this.gridManager.checkCollision(this.currentX + 1, this.currentY, this.currentBlock)) {
       this.clearBlock()
       this.currentX++
@@ -76,7 +92,7 @@ export class BlockController {
     }
   }
 
-  rotate(): void {
+  public rotate(): void {
     const rotatedShape = rotateMatrix(this.currentBlock.shape)
 
     if (!this.gridManager.checkCollision(this.currentX, this.currentY, { shape: rotatedShape })) {
@@ -90,7 +106,7 @@ export class BlockController {
     this.currentBlock.shape.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell === 1) {
-          this.drawRectangle(this.currentX + colIndex, this.currentY + rowIndex, this.currentBlock.color)
+          this.drawBlockCell(this.currentX + colIndex, this.currentY + rowIndex, this.currentBlock.color)
         }
       })
     })
@@ -100,13 +116,13 @@ export class BlockController {
     this.currentBlock.shape.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell === 1) {
-          this.drawRectangle(this.currentX + colIndex, this.currentY + rowIndex, Colors.BACKGROUND)
+          this.drawBlockCell(this.currentX + colIndex, this.currentY + rowIndex, Colors.BACKGROUND)
         }
       })
     })
   }
 
-  private drawRectangle(x: number, y: number, color: number): void {
+  private drawBlockCell(x: number, y: number, color: number): void {
     this.scene.add
       .rectangle(
         x * this.gridManager.gridSize.cellSize,

@@ -6,81 +6,76 @@ export class GridManager {
   private grid: number[][]
   public readonly gridSize = { cols: 10, rows: 20, cellSize: 30 }
 
-  constructor(scene: Phaser.Scene) {
+  public constructor(scene: Phaser.Scene) {
     this.scene = scene
-    this.grid = Array.from({ length: this.gridSize.rows }, () => Array(this.gridSize.cols).fill(0))
+    this.grid = this.createEmptyGrid()
     this.drawGrid()
   }
 
-  fixBlock(x: number, y: number, block: { shape: number[][]; color: number }) {
+  private createEmptyGrid(): number[][] {
+    const rowTemplate = new Array(this.gridSize.cols).fill(0)
+    return Array.from({ length: this.gridSize.rows }, () => [...rowTemplate])
+  }
+
+  public fixBlock(x: number, y: number, block: { shape: number[][]; color: number }): void {
     block.shape.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell === 1) {
-          const gridX = x + colIndex
-          const gridY = y + rowIndex
-
-          if (gridY < this.gridSize.rows) {
-            this.grid[gridY][gridX] = block.color
-          }
+          this.setGridCell(x + colIndex, y + rowIndex, block.color)
         }
       })
     })
     this.drawGrid()
+  }
+
+  private setGridCell(x: number, y: number, color: number): void {
+    if (y < this.gridSize.rows) {
+      this.grid[y][x] = color
+    }
   }
 
   private drawGrid(): void {
     this.scene.children.removeAll()
-
     for (let i = 0; i < this.gridSize.cols; i++) {
       for (let j = 0; j < this.gridSize.rows; j++) {
-        const color = this.grid[j][i] === 0 ? Colors.BACKGROUND : this.grid[j][i]
-
-        this.scene.add
-          .rectangle(
-            i * this.gridSize.cellSize,
-            j * this.gridSize.cellSize,
-            this.gridSize.cellSize,
-            this.gridSize.cellSize,
-            color
-          )
-          .setOrigin(0, 0)
-          .setStrokeStyle(1, Colors.BORDER)
+        this.drawGridCell(i, j, this.grid[j][i])
       }
     }
   }
 
-  checkCollision(x: number, y: number, block: { shape: number[][] }): boolean {
-    return block.shape.some((row, rowIndex) => {
-      return row.some((cell, colIndex) => {
-        if (cell === 1) {
-          const gridX = x + colIndex
-          const gridY = y + rowIndex
-          return (
-            gridY >= this.gridSize.rows || // 地面に到達
-            gridX < 0 ||
-            gridX >= this.gridSize.cols || // 左右の壁に衝突
-            this.grid[gridY]?.[gridX] !== 0 // すでに固定されているブロックに衝突
-          )
-        }
-        return false
-      })
-    })
+  private drawGridCell(x: number, y: number, color: number): void {
+    const fillColor = color === 0 ? Colors.BACKGROUND : color
+    this.scene.add
+      .rectangle(
+        x * this.gridSize.cellSize,
+        y * this.gridSize.cellSize,
+        this.gridSize.cellSize,
+        this.gridSize.cellSize,
+        fillColor
+      )
+      .setOrigin(0, 0)
+      .setStrokeStyle(1, Colors.BORDER)
   }
 
-  clearLines(): number {
-    let linesCleared = 0
-    this.grid = this.grid.filter((row) => {
-      if (row.every((cell) => cell !== 0)) {
-        linesCleared++
-        return false
-      }
-      return true
-    })
+  public checkCollision(x: number, y: number, block: { shape: number[][] }): boolean {
+    return block.shape.some((row, rowIndex) =>
+      row.some((cell, colIndex) => cell === 1 && this.isCellOccupied(x + colIndex, y + rowIndex))
+    )
+  }
 
-    while (this.grid.length < this.gridSize.rows) {
-      this.grid.unshift(Array(this.gridSize.cols).fill(0))
+  private isCellOccupied(x: number, y: number): boolean {
+    return y >= this.gridSize.rows || x < 0 || x >= this.gridSize.cols || this.grid[y]?.[x] !== 0
+  }
+
+  public clearLines(): number {
+    const newGrid = this.grid.filter((row) => !row.every((cell) => cell !== 0))
+    const linesCleared = this.gridSize.rows - newGrid.length
+
+    while (newGrid.length < this.gridSize.rows) {
+      newGrid.unshift(Array(this.gridSize.cols).fill(0))
     }
 
+    this.grid = newGrid
     this.drawGrid()
     return linesCleared
   }
