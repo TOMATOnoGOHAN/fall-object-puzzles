@@ -1,23 +1,27 @@
-import { Boot } from "./scenes/Boot";
-import { GameOver } from "./scenes/GameOver";
-import { Game as MainGame } from "./scenes/Game";
-import { MainMenu } from "./scenes/MainMenu";
-import { AUTO, Game } from "phaser";
-import { Preloader } from "./scenes/Preloader";
+import Phaser from 'phaser'
+import MainScene from './scenes/MainScene'
 
-//  Find out more information about the Game Config at:
-//  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
+// Phaserの設定管理とエントリーポイント
 const config: Phaser.Types.Core.GameConfig = {
-    type: AUTO,
-    width: 1024,
-    height: 768,
-    parent: "game-container",
-    backgroundColor: "#028af8",
-    scene: [Boot, Preloader, MainMenu, MainGame, GameOver],
-};
+  type: Phaser.AUTO,
+  width: 300,
+  height: 600,
+  parent: 'game-container',
+  backgroundColor: '#000',
+  physics: {
+    default: 'arcade',
+    arcade: {
+      gravity: {
+        y: 0,
+        x: 0
+      }
+    }
+  },
+  scene: [MainScene]
+}
 
 const StartGame = (parent: string) => {
-    return new Game({ ...config, parent });
-};
+  return new Phaser.Game({ ...config, parent })
+}
 
-export default StartGame;
+export default StartGame
