@@ -16,15 +16,28 @@ export class GridManager {
     const rowTemplate = new Array(this.gridSize.cols).fill(0)
     return Array.from({ length: this.gridSize.rows }, () => [...rowTemplate])
   }
-
   public fixBlock(x: number, y: number, block: { shape: number[][]; color: number }): void {
+    let isGameOver = false
+
     block.shape.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell === 1) {
-          this.setGridCell(x + colIndex, y + rowIndex, block.color)
+          let cellY = y + rowIndex
+          if (cellY < 0) {
+            isGameOver = true
+          } else {
+            this.setGridCell(x + colIndex, cellY, block.color)
+          }
         }
       })
     })
+
+    if (isGameOver) {
+      this.scene.add.text(160, 240, 'Game Over', { fontSize: '32px', color: '#ff0000' }).setOrigin(0.5).setDepth(10)
+      this.scene.scene.pause()
+      return
+    }
+
     this.drawGrid()
   }
 
@@ -35,7 +48,11 @@ export class GridManager {
   }
 
   private drawGrid(): void {
-    this.scene.children.removeAll()
+    this.scene.children.each((child) => {
+      if (!(child instanceof Phaser.GameObjects.Text)) {
+        child.destroy()
+      }
+    })
     for (let i = 0; i < this.gridSize.cols; i++) {
       for (let j = 0; j < this.gridSize.rows; j++) {
         this.drawGridCell(i, j, this.grid[j][i])
@@ -64,6 +81,7 @@ export class GridManager {
   }
 
   private isCellOccupied(x: number, y: number): boolean {
+    if (y < 0) return false
     return y >= this.gridSize.rows || x < 0 || x >= this.gridSize.cols || this.grid[y]?.[x] !== 0
   }
 

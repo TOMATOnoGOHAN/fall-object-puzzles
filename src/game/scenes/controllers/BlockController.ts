@@ -24,22 +24,9 @@ export class BlockController {
   public spawnBlock(): void {
     this.currentBlock = getRandomBlock()
     this.currentX = 4
-    this.currentY = 0
-
-    if (this.isGameOver()) {
-      return
-    }
+    this.currentY = -2
 
     this.drawBlock()
-  }
-
-  private isGameOver(): boolean {
-    if (this.gridManager.checkCollision(this.currentX, this.currentY, this.currentBlock)) {
-      this.scene.add.text(64, 240, 'Game Over', { fontSize: '32px', color: Colors.TEXT.GAME_OVER })
-      this.scene.scene.pause()
-      return true
-    }
-    return false
   }
 
   public drop(): void {
@@ -61,6 +48,7 @@ export class BlockController {
           () => {
             if (this.gridManager.checkCollision(this.currentX, this.currentY + 1, this.currentBlock)) {
               this.gridManager.fixBlock(this.currentX, this.currentY, this.currentBlock)
+
               const linesCleared = this.gridManager.clearLines()
               this.scoreManager.updateScore(linesCleared)
               this.spawnBlock()
