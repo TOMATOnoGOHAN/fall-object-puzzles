@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { Colors } from '../constants/Color'
+import MainScene from '../MainScene'
 
 export class GridManager {
   private scene: Phaser.Scene
@@ -34,6 +35,8 @@ export class GridManager {
 
     if (isGameOver) {
       this.scene.add.text(160, 240, 'Game Over', { fontSize: '32px', color: '#ff0000' }).setOrigin(0.5).setDepth(10)
+      const mainScene = this.scene as MainScene
+      mainScene.getBgm().stop()
       this.scene.scene.pause()
       return
     }

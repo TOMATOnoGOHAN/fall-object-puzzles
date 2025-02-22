@@ -15,7 +15,7 @@ interface BlockDefinition {
 
 // prettier-ignore
 export const BLOCK: Record<BlockType, BlockDefinition> = {
-  I: { shape: [[1, 1, 1, 1]], color: Colors.BLOCKS.I },
+  I: { shape: [[1],[1],[1],[1]], color: Colors.BLOCKS.I },
   O: { shape: [[1, 1], [1, 1]], color: Colors.BLOCKS.O },
   T: { shape: [[0, 1, 0], [1, 1, 1]], color: Colors.BLOCKS.T },
   L: { shape: [[1, 0], [1, 0], [1, 1]], color: Colors.BLOCKS.L },

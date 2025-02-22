@@ -9,15 +9,28 @@ export default class MainScene extends Phaser.Scene {
   private scoreManager!: ScoreManager
   private lastDropTime: number = 0
   private readonly defaultDropInterval: number = 500
+  private bgm!: Phaser.Sound.BaseSound
+
+  public getBgm(): Phaser.Sound.BaseSound {
+    return this.bgm
+  }
 
   constructor() {
     super('MainScene')
+  }
+
+  public preload(): void {
+    this.load.audio('bgm', 'assets/audio/music.mp3')
   }
 
   public create(): void {
     this.initializeManagers()
     this.setupControls()
     this.blockController.spawnBlock()
+
+    // BGM を再生
+    this.bgm = this.sound.add('bgm', { loop: true, volume: 0.5 })
+    this.bgm.play()
   }
 
   private initializeManagers(): void {
