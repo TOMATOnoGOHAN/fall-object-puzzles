@@ -1,5 +1,6 @@
 import { BLOCK, BlockCell, BlockType } from '../components/Block'
 
+/** 右回り */
 export function rotateMatrix(matrix: number[][]): number[][] {
   const rows = matrix.length
   const cols = matrix[0].length
@@ -8,6 +9,20 @@ export function rotateMatrix(matrix: number[][]): number[][] {
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       rotated[c][rows - 1 - r] = matrix[r][c]
+    }
+  }
+  return rotated
+}
+
+/** 左回り */
+export function rotateMatrixCcw(matrix: number[][]): number[][] {
+  const rows = matrix.length
+  const cols = matrix[0].length
+  const rotated = Array.from({ length: cols }, () => Array(rows))
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      rotated[cols - 1 - c][r] = matrix[r][c]
     }
   }
   return rotated

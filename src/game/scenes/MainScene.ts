@@ -31,6 +31,7 @@ export default class MainScene extends Phaser.Scene {
       LEFT: () => this.blockController.moveLeft(),
       RIGHT: () => this.blockController.moveRight(),
       SPACE: () => this.blockController.rotate(),
+      SHIFT: () => this.blockController.rotateCcw(),
       DOWN: () => this.blockController.moveDown(),
       UP: () => this.blockController.drop()
     }

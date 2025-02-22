@@ -1,4 +1,4 @@
-import { rotateMatrix, getBlock } from '../utils/BlockUtils'
+import { rotateMatrix, getBlock, rotateMatrixCcw } from '../utils/BlockUtils'
 import { Colors } from '../constants/Color'
 import { GridManager } from '../controllers/GridManager'
 import Phaser from 'phaser'
@@ -12,6 +12,9 @@ export class BlockController {
   private currentBlock!: { shape: number[][]; color: number }
   private currentX!: number
   private currentY!: number
+
+  private gracePeriodMs = 500
+  private isLanding = false
 
   private choiceBlock: number = 0
   private BLOCK_LIST: BlockType[] = [
@@ -65,12 +68,26 @@ export class BlockController {
 
   public moveDown(): void {
     if (this.gridManager.checkCollision(this.currentX, this.currentY + 1, this.currentBlock)) {
-      this.gridManager.fixBlock(this.currentX, this.currentY, this.currentBlock)
-      const linesCleared = this.gridManager.clearLines()
-      this.scoreManager.updateScore(linesCleared)
-      this.spawnBlock()
+      if (!this.isLanding) {
+        this.isLanding = true
+        this.scene.time.delayedCall(
+          this.gracePeriodMs,
+          () => {
+            if (this.gridManager.checkCollision(this.currentX, this.currentY + 1, this.currentBlock)) {
+              this.gridManager.fixBlock(this.currentX, this.currentY, this.currentBlock)
+              const linesCleared = this.gridManager.clearLines()
+              this.scoreManager.updateScore(linesCleared)
+              this.spawnBlock()
+            }
+            this.isLanding = false
+          },
+          [],
+          this
+        )
+      }
       return
     }
+
     this.clearBlock()
     this.currentY++
     this.drawBlock()
@@ -91,14 +108,56 @@ export class BlockController {
       this.drawBlock()
     }
   }
-
   public rotate(): void {
     const rotatedShape = rotateMatrix(this.currentBlock.shape)
+    const wallKickOffsets = this.getWallKickOffsets(true)
 
-    if (!this.gridManager.checkCollision(this.currentX, this.currentY, { shape: rotatedShape })) {
-      this.clearBlock()
-      this.currentBlock.shape = rotatedShape
-      this.drawBlock()
+    for (const offset of wallKickOffsets) {
+      const newX = this.currentX + offset.x
+      const newY = this.currentY + offset.y
+
+      if (!this.gridManager.checkCollision(newX, newY, { shape: rotatedShape })) {
+        this.clearBlock()
+        this.currentX = newX
+        this.currentY = newY
+        this.currentBlock.shape = rotatedShape
+        this.drawBlock()
+        return
+      }
+    }
+  }
+
+  public rotateCcw(): void {
+    const rotatedShape = rotateMatrixCcw(this.currentBlock.shape)
+    const wallKickOffsets = this.getWallKickOffsets(false)
+
+    for (const offset of wallKickOffsets) {
+      const newX = this.currentX + offset.x
+      const newY = this.currentY + offset.y
+
+      if (!this.gridManager.checkCollision(newX, newY, { shape: rotatedShape })) {
+        this.clearBlock()
+        this.currentX = newX
+        this.currentY = newY
+        this.currentBlock.shape = rotatedShape
+        this.drawBlock()
+        return
+      }
+    }
+  }
+
+  /** スーパーローテーション用のオフセット */
+  // prettier-ignore
+  private getWallKickOffsets(isClockwise: boolean): { x: number, y: number }[] {
+    const isIBlock = this.currentBlock.shape.length === 1 || this.currentBlock.shape[0].length === 4;
+    if (isIBlock) {
+      return isClockwise
+        ? [{ x: 0, y: 0 }, { x: -2, y: 0 }, { x: 1, y: 0 }, { x: -2, y: -1 }, { x: 1, y: 2 }]
+        : [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: -2, y: 0 }, { x: 1, y: -2 }, { x: -2, y: 1 }];
+    } else {
+      return isClockwise
+        ? [{ x: 0, y: 0 }, { x: -1, y: 0 }, { x: -1, y: -1 }, { x: 0, y: 2 }, { x: -1, y: 2 }]
+        : [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: -2 }, { x: 1, y: -2 }];
     }
   }
 
