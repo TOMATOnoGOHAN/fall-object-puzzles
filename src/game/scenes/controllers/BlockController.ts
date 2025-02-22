@@ -1,9 +1,8 @@
-import { rotateMatrix, getBlock, rotateMatrixCcw } from '../utils/BlockUtils'
+import { rotateMatrix, rotateMatrixCcw, getRandomBlock } from '../utils/BlockUtils'
 import { Colors } from '../constants/Color'
 import { GridManager } from '../controllers/GridManager'
 import Phaser from 'phaser'
 import { ScoreManager } from './ScoreManager'
-import { BlockType } from '../components/Block'
 
 export class BlockController {
   private scene: Phaser.Scene
@@ -16,18 +15,6 @@ export class BlockController {
   private gracePeriodMs = 500
   private isLanding = false
 
-  private choiceBlock: number = 0
-  private BLOCK_LIST: BlockType[] = [
-    BlockType.I,
-    BlockType.T,
-    BlockType.J,
-    BlockType.L,
-    BlockType.O,
-    BlockType.T,
-    BlockType.S,
-    BlockType.Z
-  ]
-
   constructor(scene: Phaser.Scene, gridManager: GridManager, scoreManager: ScoreManager) {
     this.scene = scene
     this.gridManager = gridManager
@@ -35,8 +22,7 @@ export class BlockController {
   }
 
   public spawnBlock(): void {
-    this.currentBlock = getBlock(this.BLOCK_LIST[this.choiceBlock])
-    this.choiceBlock = (this.choiceBlock + 1) % this.BLOCK_LIST.length
+    this.currentBlock = getRandomBlock()
     this.currentX = 4
     this.currentY = 0
 

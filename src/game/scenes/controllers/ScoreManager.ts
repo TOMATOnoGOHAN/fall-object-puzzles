@@ -5,7 +5,6 @@ export class ScoreManager {
 
   private readonly levelThreshold: number = 500
   private readonly minDropInterval: number = 100
-  private readonly dropIntervalReduction: number = 50
   private readonly scorePerLine: number = 100
 
   public updateScore(linesCleared: number): void {
@@ -22,7 +21,7 @@ export class ScoreManager {
   private checkLevelUp(): void {
     if (this.score >= this.level * this.levelThreshold) {
       this.level++
-      this.dropInterval = Math.max(this.minDropInterval, this.dropInterval - this.dropIntervalReduction)
+      this.dropInterval = Math.max(this.minDropInterval, 500 * Math.pow(0.9, this.level))
     }
   }
 

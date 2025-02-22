@@ -43,10 +43,6 @@ function isOutOfBounds(x: number, y: number, gridSize: { cols: number; rows: num
   return y >= gridSize.rows || x < 0 || x >= gridSize.cols
 }
 
-export function getBlock(key: BlockType): { shape: BlockCell[][]; color: number } {
-  return BLOCK[key]
-}
-
 export function getRandomBlock(): { shape: BlockCell[][]; color: number } {
   const keys = Object.keys(BLOCK) as BlockType[]
   return BLOCK[keys[Math.floor(Math.random() * keys.length)]]
